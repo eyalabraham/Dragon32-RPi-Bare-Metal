@@ -186,14 +186,14 @@ void vdg_render(void)
     int     vdg_mem_offset;
     int     fb_offset = 0;
 
-    //rpi_testpoint_on();
-
     /* Set the refresh interval
      */
     if ( (rpi_system_timer() - last_refresh_time) < VDG_REFRESH_INTERVAL )
     {
         return;
     }
+
+    //rpi_testpoint_on();
 
     last_refresh_time = rpi_system_timer();
 

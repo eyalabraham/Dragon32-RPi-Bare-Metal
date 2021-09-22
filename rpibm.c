@@ -432,7 +432,7 @@ int rpi_reset_button(void)
  *
  *  Set GPIO to select analog multiplexer output.
  *
- *  param:  Multiplexer select bit field: b.2=PIA1-CB2, b1=PIA0-CB2, b.0=PIA0-CA2
+ *  param:  Multiplexer select bit field: b.1=PIA1-CB2, b.0=PIA0-CA2
  *  return: None
  */
 void rpi_audio_mux_set(int select)
@@ -442,7 +442,7 @@ void rpi_audio_mux_set(int select)
     if ( select != previous_select )
     {
         bcm2835_gpio_write_mask((uint32_t)select << AUDIO_MUX0, (uint32_t) AUDIO_MUX_MASK);
-        bcm2835_crude_delay(20);    // TODO check is this is needed to reduce value noise
+        bcm2835_crude_delay(20);    // TODO check if this is needed to reduce value noise
         previous_select = select;
     }
 }

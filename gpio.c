@@ -100,9 +100,9 @@ void bcm2835_gpio_set(int pin)
     dmb();
 
     if ( pin < 32 )
-        bcm2835_gpio->gpset0 |= (1 << shift);
+        bcm2835_gpio->gpset0 = (1 << shift);
     else
-        bcm2835_gpio->gpset1 |= (1 << shift);
+        bcm2835_gpio->gpset1 = (1 << shift);
 
     dmb();
 }
@@ -125,9 +125,9 @@ void bcm2835_gpio_clr(int pin)
     dmb();
 
     if ( pin < 32 )
-        bcm2835_gpio->gpclr0 |= (1 << shift);
+        bcm2835_gpio->gpclr0 = (1 << shift);
     else
-        bcm2835_gpio->gpclr1 |= (1 << shift);
+        bcm2835_gpio->gpclr1 = (1 << shift);
 
     dmb();
 }

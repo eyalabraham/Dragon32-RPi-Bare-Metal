@@ -43,10 +43,10 @@
 #define     PIA_CR_INTR         0x01    // CA1/CB1 interrupt enable bit
 #define     PIA_CR_IRQ_STAT     0x80    // IRQA1/IRQB1 status bit
 
-#define     AUDIO_MUX_DAC       0
-#define     AUDIO_MUX_OTHER     1
-#define     AUDIO_MUX_JSTKX     2
-#define     AUDIO_MUX_JSTKY     3
+#define     AUDIO_MUX_JSTKX     0
+#define     AUDIO_MUX_JSTKY     1
+#define     AUDIO_MUX_DAC       2
+#define     AUDIO_MUX_OTHER     3       // Off
 
 #define     MOTOR_ON            0b00001000
 #define     BIT_THRESHOLD_HI    4
@@ -77,7 +77,7 @@ static uint8_t pia0_crb = 0;
 static uint8_t pia1_cra = 0;
 static uint8_t pia1_crb = 0;
 
-static uint8_t audio_mux_select = AUDIO_MUX_DAC;
+static uint8_t audio_mux_select = AUDIO_MUX_OTHER;
 
 static dir_entry_t  cas_file;
 
