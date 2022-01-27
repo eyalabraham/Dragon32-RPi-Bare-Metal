@@ -284,6 +284,12 @@ cpu_run_state_t cpu_run(void)
     int  intr_latch = 0;
     int  op_code = -1;
 
+    /* Latch interrupt requests
+     */
+    intr_latch |= cpu.nmi_latched ? INT_NMI : 0;
+    intr_latch |= cpu.irq_asserted ? INT_IRQ : 0;
+    intr_latch |= cpu.firq_asserted ? INT_FIRQ : 0;
+
     /* Check RESET at every cycle
      * this will emulate an asynchronous RESET response.
      */
@@ -317,11 +323,25 @@ cpu_run_state_t cpu_run(void)
             return cpu.cpu_state;
         }
 
-        /* TODO Time-mark for real CPU cycle-time calculation
+        /* We get here if not in RESET and not HALTed.
+         * If the CPU was put into SYNC mode by 'SYNC' or 'CWAI'
+         * then this point will force the emulation to exit execution
+         * and stay in wait mode, or if an interrupt was latched
+         * then execution will proceed with op-code fetch.
          */
+        if ( cpu.cpu_state == CPU_SYNC )
+        {
+            if ( intr_latch & (INT_NMI | INT_FIRQ | INT_IRQ) )
+            {
+                cpu.cpu_state = CPU_EXEC;
+            }
+            else
+            {
+                return cpu.cpu_state;
+            }
+        }
 
-        /* Latch interrupts and check if active.
-         * If an interrupt is received and it is enabled, then
+        /* If an interrupt is received and it is enabled, then
          * setup stack frame and call interrupt service by
          * setting the PC to the vectors content.
          * Release CPU state to CPU_EXEC to let COU emulation
@@ -335,10 +355,6 @@ cpu_run_state_t cpu_run(void)
          * then it will not be serviced.
          * The IRQ and FIRQ signal is level driven.
          */
-        intr_latch |= cpu.nmi_latched ? INT_NMI : 0;
-        intr_latch |= cpu.irq_asserted ? INT_IRQ : 0;
-        intr_latch |= cpu.firq_asserted ? INT_FIRQ : 0;
-
         if ( cpu.nmi_armed && (intr_latch & INT_NMI) )
         {
             cpu.cpu_state = CPU_EXEC;
@@ -427,16 +443,6 @@ cpu_run_state_t cpu_run(void)
 
             cpu.pc = (mem_read(VEC_IRQ) << 8) + mem_read(VEC_IRQ+1);
         }
-
-        /* We get here if not in RESET and not HALTed.
-         * If the CPU was put into SYNC mode by 'SYNC' or 'CWAI'
-         * then this point will force the emulation to exit execution
-         * and stay in wait more. If an interrupt was acknowledges
-         * above, then execution will proceed with op-code fetch.
-         */
-        if ( cpu.cpu_state == CPU_SYNC )
-            return cpu.cpu_state;
-
 
         /* CPU now running so fetch instruction.
          * First we force state to CPU_EXEC so that the
@@ -1396,9 +1402,6 @@ cpu_run_state_t cpu_run(void)
                     cpu.exception_line_num = __LINE__;
             }
         }
-
-        /* TODO Delay exit to match actual CPU cycle-time?
-         */
     }
 
     /* Preserves for other uses such as
