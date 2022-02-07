@@ -13,6 +13,7 @@
 #include    "mem.h"
 #include    "cpu.h"
 #include    "rpi.h"
+#include    "gpio.h"
 
 #include    "sam.h"
 #include    "vdg.h"
@@ -31,8 +32,8 @@
 #define     DRAGON_ROM_END          0xfeff
 #define     ESCAPE_LOADER           1       // Pressing F1
 #define     LONG_RESET_DELAY        1500000 // Micro-seconds to force cold start
-#define     VDG_RENDER_CYCLES       4445    // CPU cycle count for ~50mSec screen refresh rate
-#define     CPU_TIME_WASTE          300     // Results in a CPU cycle of 4uSec
+#define     VDG_RENDER_CYCLES       4500    // CPU cycle count for ~20mSec screen refresh rate
+#define     CPU_TIME_WASTE          1500    // Results in a CPU cycle of 4uSec
 
 /* -----------------------------------------
    Module functions
@@ -88,17 +89,22 @@ static int get_reset_state(uint32_t time);
     printf("Starting CPU.\n");
     cpu_reset(1);
 
+    /* Profiling results:
+     *  Cache    Turbo   cpu_run()
+     *    no       no     5.2uS
+     *    no      yes     3.4uS
+     *   yes       no     4.0uS
+     *   yes      yes     2.5uS
+     *
+     *  Full loop without extra delay measured at 3uSec
+     */
     for (;;)
     {
-        /* 5uSec
-         * about 3uSec consumed by get_eff_addr()
-         *
-         */
         rpi_testpoint_on();
         cpu_run();
         rpi_testpoint_off();
 
-        //for ( i = 0; i < CPU_TIME_WASTE; i++);
+        bcm2835_crude_delay(2);
 
         switch ( get_reset_state(LONG_RESET_DELAY) )
         {

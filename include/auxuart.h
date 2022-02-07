@@ -38,17 +38,17 @@
  */
 typedef enum
 {
-    BAUD_9600   = 3254,
-    BAUD_19200  = 1627,
-    BAUD_38400  = 813,
-    BAUD_57600  = 542,
-    BAUD_115200 = 270
+    BAUD_9600   = 9600,
+    BAUD_19200  = 19200,
+    BAUD_38400  = 38400,
+    BAUD_57600  = 57600,
+    BAUD_115200 = 115200,
 } baud_t;
 
 
 /* UART management
  */
-int     bcm2835_auxuart_init(baud_t baud_rate_div,
+int     bcm2835_auxuart_init(baud_t baud_rate,
                              uint32_t rx_tout, uint32_t tx_tout,
                              uint32_t configuration);           // Initialization
 void    bcm2835_auxuart_close(void);                            // Close auxiliary mini UART

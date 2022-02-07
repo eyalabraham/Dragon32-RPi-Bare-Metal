@@ -14,6 +14,7 @@
  */
 
 #include    "gpio.h"
+#include    "mailbox.h"
 
 /* -----------------------------------------
    Module globals
@@ -718,6 +719,30 @@ void bcm2835_gpio_write_mask(uint32_t value, uint32_t mask)
 {
     bcm2835_gpio_set_multi(value & mask);
     bcm2835_gpio_clr_multi((~value) & mask);
+}
+
+/*------------------------------------------------
+ * bcm2835_core_clk()
+ *
+ *  Return the core clock frequency in Hz
+ *
+ * param:  none
+ * return: core clock frequency in Hz, 0=failed
+ *
+ */
+uint32_t bcm2835_core_clk(void)
+{
+    mailbox_tag_property_t *mp;
+
+    bcm2835_mailbox_init();
+    bcm2835_mailbox_add_tag(TAG_GET_CLOCK_RATE, TAG_CLOCK_CORE);
+
+    if ( !bcm2835_mailbox_process() )
+        return 0;
+
+    mp = bcm2835_mailbox_get_property(TAG_GET_CLOCK_RATE);
+
+    return mp->values.fb_alloc.param2;
 }
 
 /*------------------------------------------------

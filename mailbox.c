@@ -206,9 +206,10 @@ void bcm2835_mailbox_add_tag(uint32_t tag, ...)
             break;
 
         case TAG_FB_ALLOCATE:
+        case TAG_GET_CLOCK_RATE:
             pt[property_index++] = 8;
             pt[property_index++] = MB_REQUEST;
-            pt[property_index++] = va_arg(vl, uint32_t);    // Framebuffer alignment
+            pt[property_index++] = va_arg(vl, uint32_t);
             property_index += 1;
             break;
 

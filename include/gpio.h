@@ -52,6 +52,8 @@ void     bcm2835_gpio_clr_pudclk(int pin);
 void     bcm2835_gpio_set_pud(int pin, bcm2835PUDControl_t pud);
 void     bcm2835_gpio_write_mask(uint32_t value, uint32_t mask);
 
+uint32_t bcm2835_core_clk(void);
+
 void     bcm2835_crude_delay(uint32_t micro_second);
 
 #endif  /* __GPIO_H__ */

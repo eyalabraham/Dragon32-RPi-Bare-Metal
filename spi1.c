@@ -1,7 +1,7 @@
 /*
  * spi1.c
  *
- *  Driver library module for the SPI1 interface of the BCM2835.
+ *  Driver library module for the SPI1 interface (AUX SPI0) of the BCM2835.
  *  The SPI1 interface is available on RPi Zero 40-pin
  *  header and SPI2 is not available on the RPi header pins.
  *
@@ -42,7 +42,6 @@
 #define     AUX_SPI_CLOCK_MAX           125000000   // Hz
 
 #define     AUX_SPI_CNTL0_SPEED         0xFFF00000
-#define     AUX_SPI_CNTL0_SPEED_MAX     4095
 #define     AUX_SPI_CNTL0_SPEED_SHIFT   20
 #define     AUX_SPI_CNTL0_BYTE_SHIFT    8
 
@@ -77,6 +76,9 @@
 #define     AUX_SPI_STAT_BUSY           0x00000040
 #define     AUX_SPI_STAT_BITCOUNT       0x0000003F
 
+#define     AUX_SPI_MIN_RATE            32000       // Hz
+#define     AUX_SPI_MAX_RATE            10000000    // Hz
+
 /* -----------------------------------------
    Types and data structures
 ----------------------------------------- */
@@ -106,6 +108,15 @@ int bcm2835_spi1_init(uint32_t configuration)
 {
     uint32_t    spi_config0 = 0x00000000;
     uint32_t    spi_config1 = 0x00000000;
+    uint32_t    system_clock;
+    uint32_t    spi_rate_div;
+
+    /* Get core frequency and dynamically calculate rate divisor
+     */
+    if ( !(system_clock = bcm2835_core_clk()) )
+        return 0;
+
+    spi_rate_div = ((system_clock / SPI1_DEFAULT_RATE) / 2) - 1;
 
     /* Set the SPI1 pins to the Alt-4 function to enable SPI1 access
      */
@@ -121,7 +132,7 @@ int bcm2835_spi1_init(uint32_t configuration)
     /* Compile configuration from configuration bits
      * and apply to device
      */
-    spi_config0 = (SPI1_DATA_RATE_128KHZ << AUX_SPI_CNTL0_SPEED_SHIFT) |
+    spi_config0 = (spi_rate_div << AUX_SPI_CNTL0_SPEED_SHIFT) |
                   AUX_SPI_CNTL0_CS2_N |
                   AUX_SPI_CNTL0_ENABLE |
                   AUX_SPI_CNTL0_CPHA_IN |
@@ -169,22 +180,37 @@ void bcm2835_spi1_close(void)
  *
  *  Set the SPI data transfer rate.
  *
- * param:  Transfer rate preset constant
- * return: none
+ * param:  Transfer rate in Hz
+ * return: 1- if successful, 0- otherwise
  *
  */
-void bcm2835_spi1_set_rate(spi1_clock_div_t data_rate)
+int bcm2835_spi1_set_rate(uint32_t data_rate)
 {
     uint32_t    spi_config0;
+    uint32_t    system_clock;
+    uint32_t    spi_rate_div;
 
-    if ( data_rate > AUX_SPI_CNTL0_SPEED_MAX )
-        data_rate = AUX_SPI_CNTL0_SPEED_MAX;
+    /* Limit check
+     */
+    if ( data_rate > AUX_SPI_MAX_RATE )
+        data_rate = AUX_SPI_MAX_RATE;
+    else if ( data_rate < AUX_SPI_MIN_RATE )
+        data_rate = AUX_SPI_MIN_RATE;
+
+    /* Get core frequency and dynamically calculate rate divisor
+     */
+    if ( !(system_clock = bcm2835_core_clk()) )
+        return 0;
+
+    spi_rate_div = ((system_clock / data_rate) / 2) - 1;
 
     dmb();
     spi_config0 = pSPI->aux_spi1_cntl0_reg;
     spi_config0 &= ~AUX_SPI_CNTL0_SPEED;
-    spi_config0 |= (data_rate << AUX_SPI_CNTL0_SPEED_SHIFT);
+    spi_config0 |= (spi_rate_div << AUX_SPI_CNTL0_SPEED_SHIFT);
     pSPI->aux_spi1_cntl0_reg = spi_config0;
+
+    return 1;
 }
 
 /*------------------------------------------------

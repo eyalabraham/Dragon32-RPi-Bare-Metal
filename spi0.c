@@ -47,6 +47,9 @@
 #define     SPI0_CS1                    0x00000001      // 00- CS0, 01- CS1, 10- CS2 (not available)
 #define     SPI0_CS_MASK                0x00000003      // Chip Select mask, clear bit for CS0
 
+#define     SPI0_MIN_RATE               32000           // ~32KHz
+#define     SPI0_MAX_RATE               10000000        // actual ~9.6MHz
+
 /* -----------------------------------------
    Types and data structures
 ----------------------------------------- */
@@ -74,6 +77,18 @@ static spi0_regs_t *pSPI = (spi0_regs_t*)BCM2835_SPI0_BASE;
 int bcm2835_spi0_init(uint32_t configuration)
 {
     uint32_t    spi_config = 0x00000000;
+    uint32_t    system_clock;
+    uint32_t    spi_rate_div;
+
+    /* Get core frequency and dynamically calculate rate divisor
+     */
+    if ( !(system_clock = bcm2835_core_clk()) )
+        return 0;
+
+    spi_rate_div = system_clock / SPI0_DEFAULT_RATE;
+
+    if ( spi_rate_div & 1)
+        spi_rate_div++;
 
     /* Set the SPI0 pins to the Alt-0 function to enable SPI0 access on them
      */
@@ -99,7 +114,7 @@ int bcm2835_spi0_init(uint32_t configuration)
 
     pSPI->spi_cs = spi_config;
 
-    pSPI->spi_clk = SPI0_DATA_RATE_488KHZ;
+    pSPI->spi_clk = spi_rate_div;
 
     return 1;
 }
@@ -132,14 +147,36 @@ void bcm2835_spi0_close(void)
  *
  *  Set the SPI data transfer rate.
  *
- * param:  Transfer rate preset constant
- * return: none
+ * param:  Transfer rate in Hz
+ * return: 1- if successful, 0- otherwise
  *
  */
-void bcm2835_spi0_set_rate(spi0_clock_div_t data_rate)
+int bcm2835_spi0_set_rate(uint32_t data_rate)
 {
+    uint32_t    system_clock;
+    uint32_t    spi_rate_div;
+
+    /* Limit check
+     */
+    if ( data_rate > SPI0_MAX_RATE )
+        data_rate = SPI0_MAX_RATE;
+    else if ( data_rate < SPI0_MIN_RATE )
+        data_rate = SPI0_MIN_RATE;
+
+    /* Get core frequency and dynamically calculate rate divisor
+     */
+    if ( !(system_clock = bcm2835_core_clk()) )
+        return 0;
+
+    spi_rate_div = system_clock / data_rate;
+
+    if ( spi_rate_div & 1)
+        spi_rate_div++;
+
     dmb();
-    pSPI->spi_clk = data_rate;
+    pSPI->spi_clk = spi_rate_div;
+
+    return 1;
 }
 
 /*------------------------------------------------

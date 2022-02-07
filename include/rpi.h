@@ -13,6 +13,9 @@
 
 #include    <stdint.h>
 
+#define     DEFAULT_UART_RATE   BAUD_115200
+#define     DEFAULT_SPI0_RATE   2000000     // Keyboard interface Hz bit rate
+
 /* Define emulator stubs
  */
 typedef enum

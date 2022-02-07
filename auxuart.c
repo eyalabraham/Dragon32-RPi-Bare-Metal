@@ -79,8 +79,18 @@ volatile static int     recv_rd_ptr;
  * return: 1- if successful, 0- otherwise
  *
  */
-int bcm2835_auxuart_init(baud_t baud_rate_div, uint32_t rx_tout, uint32_t tx_tout, uint32_t configuration)
+int bcm2835_auxuart_init(baud_t baud_rate, uint32_t rx_tout, uint32_t tx_tout, uint32_t configuration)
 {
+    uint32_t    system_clock;
+    uint32_t    baud_rate_div;
+
+    /* Get core frequency and dynamically calculate baud rate divisor
+     */
+    if ( !(system_clock = bcm2835_core_clk()) )
+        return 0;
+
+    baud_rate_div = (system_clock / (baud_rate * 8)) - 1;
+
     /* Assign UART1 functions Tx/Rx to GPIO14/15 on pins 8/10
      * and remove default pull-down.
      * *** Cannot assign UART0 here, these pins are either UART1 or UART0!
@@ -105,7 +115,7 @@ int bcm2835_auxuart_init(baud_t baud_rate_div, uint32_t rx_tout, uint32_t tx_tou
     else
         pUART1->aux_mu_lcr_reg |= UART_8BIT;
 
-    pUART1->aux_mu_baud_reg = (uint32_t) baud_rate_div;
+    pUART1->aux_mu_baud_reg = baud_rate_div;
     pUART1->aux_mu_cntl_reg |= UART_RX_TX_ENA;
 
     rx_timeout = rx_tout * 1000;

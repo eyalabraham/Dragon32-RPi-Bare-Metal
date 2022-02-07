@@ -43,6 +43,8 @@
 #define     SPI0_LONG_DATA              0x00000040      // Set to 32-bit data IO
 #define     SPI0_LOSSI_MODE             0x00000080      // Interface will be in SoSSI mode
 
+#define     SPI0_DEFAULT_RATE           100000          // 100Khz
+
 /* SPI clock phase and polarity
  */
 typedef enum
@@ -64,33 +66,9 @@ typedef enum
     SPI0_CS_NONE = 3,                   // No automatic CS, application control
 } spi0_chip_sel_t;
 
-/* Resulting data rates are based on 250MHz core clock speed.
- * Using 'power of 2' dividers, although errata indicates otherwise.
- */
-typedef enum
-{
-    SPI0_DATA_RATE_4KHZ   = 0,          //   3.814697260kHz
-    SPI0_DATA_RATE_8KHZ   = 32768,      //   7.629394531kHz
-    SPI0_DATA_RATE_15KHZ  = 16384,      //  15.25878906kHz
-    SPI0_DATA_RATE_30KHZ  = 8192,       //  30.51757813kHz
-    SPI0_DATA_RATE_61KHZ  = 4096,       //  61.03515625kHz
-    SPI0_DATA_RATE_122KHZ = 2048,       // 122.0703125kHz
-    SPI0_DATA_RATE_244KHZ = 1024,       // 244.140625kHz
-    SPI0_DATA_RATE_488KHZ = 512,        // 488.28125kHz (default rate)
-    SPI0_DATA_RATE_976KHZ = 256,        // 976.5625kHz
-    SPI0_DATA_RATE_2MHZ   = 128,        //   1.953125MHz
-    SPI0_DATA_RATE_4MHZ   = 64,         //   3.90625MHz
-    SPI0_DATA_RATE_8MHZ   = 32,         //   7.8125MHz
-    SPI0_DATA_RATE_15MHZ  = 16,         //  15.625MHz
-    SPI0_DATA_RATE_31MHZ  = 8,          //  31.25MHz
-    SPI0_DATA_RATE_62MHZ  = 4,          //  62.5MHz
-    SPI0_DATA_RATE_125MHZ = 2,          // 125.0MHz
-} spi0_clock_div_t;
-
-
 int  bcm2835_spi0_init(uint32_t configuration);              // Initialization
 void bcm2835_spi0_close(void);                               // Close SPI0 device
-void bcm2835_spi0_set_rate(spi0_clock_div_t data_rate);      // Set SPI transfer data rate
+int  bcm2835_spi0_set_rate(uint32_t data_rate);              // Set SPI transfer data rate
 void bcm2835_spi0_clk_mode(spi0_mode_t mode);                // Set SPI clock mode (CPOL/CPHA)
 void bcm2835_spi0_cs(spi0_chip_sel_t cs);                    // Select CS line
 void bcm2835_spi0_cs_polarity(spi0_chip_sel_t cs, int level);// Set CS polarity

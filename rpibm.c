@@ -174,7 +174,7 @@ int rpi_gpio_init(void)
     /* Initialize auxiliary UART for console output.
      * Safe to continue with system bring-up even if UART failed?
      */
-    bcm2835_auxuart_init(BAUD_115200, 100, 100, AUXUART_DEFAULT);
+    bcm2835_auxuart_init(DEFAULT_UART_RATE, 100, 100, AUXUART_DEFAULT);
 
     /* Initialize SPI0 for AVR keyboard interface
      */
@@ -184,7 +184,7 @@ int rpi_gpio_init(void)
       return -1;
     }
 
-    bcm2835_spi0_set_rate(SPI0_DATA_RATE_2MHZ);
+    bcm2835_spi0_set_rate(DEFAULT_SPI0_RATE);
 
     /* Initialize GPIO for AVR reset line
      */
@@ -590,7 +590,7 @@ sd_error_t rpi_sd_init(void)
     bcm2835_gpio_fsel(SD_SPI_CE2, BCM2835_GPIO_FSEL_OUTP);
     bcm2835_gpio_set(SD_SPI_CE2);                           // CS to 'High'
 
-    //bcm2835_spi1_set_rate(SPI1_DATA_RATE_128KHZ);
+    //bcm2835_spi1_set_rate(128000);
 
     bcm2835_st_delay(2000);                                 // Power on delay
     bcm2835_spi1_transfer_Ex(mosi_buffer, 0, 10);           // Dummy clocks, CS=DI=High

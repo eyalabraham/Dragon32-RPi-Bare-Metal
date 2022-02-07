@@ -64,6 +64,7 @@
 #define     TAG_BOARD_SN                0x00010004
 #define     TAG_ARM_MEMORY              0x00010005
 #define     TAG_VC_MEMORY               0x00010006
+#define     TAG_GET_CLOCK_RATE          0x00030002
 
 /* Frame buffer tags (channel 8)
  */
@@ -87,6 +88,20 @@
 #define     TAG_FB_SET_VIRT_OFFSET      0x00048009  // X pixels (param1), Y pixels (param2)
 #define     TAG_FB_SET_OVERSCAN         0x0004800a  // In pixels: top (param1), bottom (param2), left (param3), right (param4)
 #define     TAG_FB_SET_PALETTE          0x0004800b  // Set color palette for 8-bit per pixel graphics
+
+/* RPi clock IDs
+ */
+#define     TAG_CLOCK_RESERVED          0
+#define     TAG_CLOCK_EMMC              1
+#define     TAG_CLOCK_UART              2
+#define     TAG_CLOCK_ARM               3
+#define     TAG_CLOCK_CORE              4
+#define     TAG_CLOCK_V3D               5
+#define     TAG_CLOCK_H264              6
+#define     TAG_CLOCK_ISP               7
+#define     TAG_CLOCK_SDRAM             8
+#define     TAG_CLOCK_PIXEL             9
+#define     TAG_CLOCK_PWM               10
 
 /* Tag structures
  */
@@ -139,6 +154,12 @@ struct fb_set_palette_t
     uint32_t    palette_offset;     // Request: first palette index, response: 0- valid or 1- not valid
     uint32_t    palette_length;
     uint32_t    palette[256];       // 'palette_length' x palette values for indexes starting at 'palette_offset'
+};
+
+struct clk_get_rate_t
+{
+    uint32_t    param1;             // response: clock ID
+    uint32_t    param2;             // response: rate in Hz
 };
 
 /* general mailbox and tag structure

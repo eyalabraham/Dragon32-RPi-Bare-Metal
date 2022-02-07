@@ -29,6 +29,10 @@
 .equ        IRD_dis,    0x80                    // When I bit is set, IRQ is disabled
 .equ        FIQ_dis,    0x40                    // When F bit is set, FIQ is disabled
 
+.equ        SCTLR_ENABLE_DATA_CACHE,        0x4
+.equ        SCTLR_ENABLE_BRANCH_PREDICTION, 0x800
+.equ        SCTLR_ENABLE_INSTRUCTION_CACHE, 0x1000
+
 .section    .text.startup
 
 .global     _start
@@ -101,6 +105,17 @@ bss_zero_loop:
     b       bss_zero_loop
 
 done_bss_zero:
+
+/* Enable L1 Cache
+ */
+    mrc     p15,0,r0,c1,c0,0                    // R0 = System Control Register
+
+    orr     r0,#SCTLR_ENABLE_BRANCH_PREDICTION  // Enable caches and branch prediction
+    orr     r0,#SCTLR_ENABLE_DATA_CACHE
+    orr     r0,#SCTLR_ENABLE_INSTRUCTION_CACHE
+
+    mcr     p15,0,r0,c1,c0,0                    // System Control Register = R0
+
 /* Load r0, r1, r2 with entry parameters
  * and call the C application entry point kernel()
  */
