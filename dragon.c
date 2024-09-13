@@ -89,20 +89,11 @@ static int get_reset_state(uint32_t time);
     printf("Starting CPU.\n");
     cpu_reset(1);
 
-    /* Profiling results:
-     *  Cache    Turbo   cpu_run()
-     *    no       no     5.2uS
-     *    no      yes     3.4uS
-     *   yes       no     4.0uS
-     *   yes      yes     2.5uS
-     *
-     *  Full loop without extra delay measured at 3uSec
-     */
     for (;;)
     {
-        rpi_testpoint_on();
+        //rpi_testpoint_on();
         cpu_run();
-        rpi_testpoint_off();
+        //rpi_testpoint_off();
 
         bcm2835_crude_delay(2);
 
@@ -134,9 +125,9 @@ static int get_reset_state(uint32_t time);
         vdg_render_cycles++;
         if ( vdg_render_cycles == VDG_RENDER_CYCLES )
         {
-            //rpi_testpoint_on();
+            rpi_testpoint_on();
             vdg_render();
-            //rpi_testpoint_off();
+            rpi_testpoint_off();
             pia_vsync_irq();
             vdg_render_cycles = 0;
         }

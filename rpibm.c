@@ -514,7 +514,7 @@ void rpi_testpoint_on(void)
     bcm2835_gpio_set(PRI_TEST_POINT);
 }
 /*------------------------------------------------
- * rpi_testpoint_on()
+ * rpi_testpoint_off()
  *
  *  Set test point to logic '0'
  *
